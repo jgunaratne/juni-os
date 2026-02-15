@@ -31,6 +31,53 @@
 .shader-app__toolbar-actions {
   display: flex;
   gap: 4px;
+  align-items: center;
+  }
+  
+  .shader-app__example-select {
+    padding: 4px 8px;
+    border: 1px solid var(--os-border);
+    border-radius: 6px;
+    background: rgba(128, 128, 128, 0.06);
+    color: var(--os-text-secondary);
+    font-size: 11px;
+    font-weight: 500;
+    cursor: pointer;
+    outline: none;
+    transition: all 0.12s;
+    margin-right: 4px;
+  }
+  
+  .shader-app__example-select:hover {
+    background: rgba(128, 128, 128, 0.15);
+    color: var(--os-text);
+  }
+  
+  .shader-app__example-select:focus {
+    border-color: var(--os-accent);
+  }
+  
+  .shader-app__scale-control {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-right: 4px;
+  }
+  
+  .shader-app__scale-label {
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--os-text-secondary);
+    min-width: 30px;
+    text-align: right;
+    white-space: nowrap;
+  }
+  
+  .shader-app__scale-slider {
+    width: 60px;
+    height: 4px;
+    cursor: pointer;
+    accent-color: var(--os-accent);
 }
 
 .shader-app__tool-btn {

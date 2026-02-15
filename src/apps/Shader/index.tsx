@@ -2,9 +2,17 @@ import { useState, useCallback, useRef, useEffect } from 'react';
 import type { AppComponentProps } from '@/shared/types';
 import './Shader.css';
 
-/* ── Default Shader (tdG3Rd – fBm fire warp) ──────────── */
+/* ── Shader Examples ───────────────────────────────────── */
 
-const DEFAULT_SHADER = `// Base warp fBM – from shadertoy.com/view/tdG3Rd
+interface ShaderExample {
+  name: string;
+  code: string;
+}
+
+const SHADER_EXAMPLES: ShaderExample[] = [
+  {
+    name: 'Fire Warp fBM',
+    code: `// Base warp fBM – from shadertoy.com/view/tdG3Rd
 // by trinketMage
 
 float colormap_red(float x) {
@@ -74,7 +82,79 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord) {
     vec2 q, r;
     float f = pattern(uv, q, r);
     fragColor = colormap(f);
-}`;
+}`,
+  },
+  {
+    name: 'Metaball SDF',
+    code: `// Metaball SDF – from shadertoy.com/view/3sySRK
+
+float opSmoothUnion( float d1, float d2, float k )
+{
+    float h = clamp( 0.5 + 0.5*(d2-d1)/k, 0.0, 1.0 );
+    return mix( d2, d1, h ) - k*h*(1.0-h);
+}
+
+float sdSphere( vec3 p, float s )
+{
+  return length(p)-s;
+}
+
+float map(vec3 p)
+{
+    float d = 2.0;
+    for (int i = 0; i < 16; i++) {
+        float fi = float(i);
+        float time = iTime * (fract(fi * 412.531 + 0.513) - 0.5) * 2.0;
+        d = opSmoothUnion(
+            sdSphere(p + sin(time + fi * vec3(52.5126, 64.62744, 632.25)) * vec3(2.0, 2.0, 0.8), mix(0.5, 1.0, fract(fi * 412.531 + 0.5124))),
+            d,
+            0.4
+        );
+    }
+    return d;
+}
+
+vec3 calcNormal( in vec3 p )
+{
+    const float h = 1e-5;
+    const vec2 k = vec2(1,-1);
+    return normalize( k.xyy*map( p + k.xyy*h ) +
+                      k.yyx*map( p + k.yyx*h ) +
+                      k.yxy*map( p + k.yxy*h ) +
+                      k.xxx*map( p + k.xxx*h ) );
+}
+
+void mainImage( out vec4 fragColor, in vec2 fragCoord )
+{
+    vec2 uv = fragCoord/iResolution.xy;
+
+    vec3 rayOri = vec3((uv - 0.5) * vec2(iResolution.x/iResolution.y, 1.0) * 6.0, 3.0);
+    vec3 rayDir = vec3(0.0, 0.0, -1.0);
+
+    float depth = 0.0;
+    vec3 p;
+
+    for(int i = 0; i < 64; i++) {
+        p = rayOri + rayDir * depth;
+        float dist = map(p);
+        depth += dist;
+        if (dist < 1e-6) {
+            break;
+        }
+    }
+
+    depth = min(6.0, depth);
+    vec3 n = calcNormal(p);
+    float b = max(0.0, dot(n, vec3(0.577)));
+    vec3 col = (0.5 + 0.5 * cos((b + iTime * 3.0) + uv.xyx * 2.0 + vec3(0,2,4))) * (0.85 + b * 0.35);
+    col *= exp( -depth * 0.15 );
+
+    fragColor = vec4(col, 1.0 - (depth - 0.5) / 2.0);
+}`,
+  },
+];
+
+const DEFAULT_SHADER = SHADER_EXAMPLES[0].code;
 
 /* ── WebGL Shader Runner ──────────────────────────────── */
 
@@ -131,20 +211,25 @@ export default function ShaderApp(_props: AppComponentProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const glRef = useRef<WebGLRenderingContext | null>(null);
   const programRef = useRef<WebGLProgram | null>(null);
+  const locsRef = useRef<{ uRes: WebGLUniformLocation | null; uTime: WebGLUniformLocation | null; uMouse: WebGLUniformLocation | null; aPos: number }>({ uRes: null, uTime: null, uMouse: null, aPos: -1 });
   const animRef = useRef<number>(0);
   const startTimeRef = useRef(Date.now());
   const mouseRef = useRef([0, 0, 0, 0]);
+  const resScaleRef = useRef(0.75);
 
   const [code, setCode] = useState(DEFAULT_SHADER);
   const [error, setError] = useState<string | null>(null);
   const [playing, setPlaying] = useState(true);
   const [showEditor, setShowEditor] = useState(true);
+  const [selectedExample, setSelectedExample] = useState(0);
+  const [resScale, setResScale] = useState(75);
 
   // Initialize WebGL
   const initGL = useCallback(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    const gl = canvas.getContext('webgl', { antialias: true, preserveDrawingBuffer: true });
+    const gl = (canvas.getContext('webgl2', { antialias: true, preserveDrawingBuffer: true })
+      ?? canvas.getContext('webgl', { antialias: true, preserveDrawingBuffer: true })) as WebGLRenderingContext | null;
     if (!gl) { setError('WebGL not supported'); return; }
     glRef.current = gl;
 
@@ -185,6 +270,15 @@ export default function ShaderApp(_props: AppComponentProps) {
     if (typeof prog === 'string') { setError(prog); return; }
 
     programRef.current = prog;
+
+    // Cache uniform & attribute locations
+    locsRef.current = {
+      uRes: gl.getUniformLocation(prog, 'iResolution'),
+      uTime: gl.getUniformLocation(prog, 'iTime'),
+      uMouse: gl.getUniformLocation(prog, 'iMouse'),
+      aPos: gl.getAttribLocation(prog, 'a_position'),
+    };
+
     setError(null);
   }, []);
 
@@ -203,27 +297,29 @@ export default function ShaderApp(_props: AppComponentProps) {
         return;
       }
 
-      const dpr = window.devicePixelRatio || 1;
+      // Apply resolution scale to reduce pixel count on large windows
+      const scale = resScaleRef.current;
+      const dpr = Math.min(window.devicePixelRatio || 1, 1.5) * scale;
       const w = canvas.clientWidth;
       const h = canvas.clientHeight;
-      canvas.width = w * dpr;
-      canvas.height = h * dpr;
+      const targetW = Math.max(1, Math.floor(w * dpr));
+      const targetH = Math.max(1, Math.floor(h * dpr));
+      if (canvas.width !== targetW || canvas.height !== targetH) {
+        canvas.width = targetW;
+        canvas.height = targetH;
+      }
       gl.viewport(0, 0, canvas.width, canvas.height);
 
       gl.useProgram(prog);
 
-      // Uniforms
-      const uRes = gl.getUniformLocation(prog, 'iResolution');
-      const uTime = gl.getUniformLocation(prog, 'iTime');
-      const uMouse = gl.getUniformLocation(prog, 'iMouse');
-      gl.uniform2f(uRes, canvas.width, canvas.height);
-      gl.uniform1f(uTime, (Date.now() - startTimeRef.current) / 1000);
-      gl.uniform4f(uMouse, mouseRef.current[0], mouseRef.current[1], mouseRef.current[2], mouseRef.current[3]);
+      // Use cached locations
+      const locs = locsRef.current;
+      gl.uniform2f(locs.uRes, canvas.width, canvas.height);
+      gl.uniform1f(locs.uTime, (Date.now() - startTimeRef.current) / 1000);
+      gl.uniform4f(locs.uMouse, mouseRef.current[0], mouseRef.current[1], mouseRef.current[2], mouseRef.current[3]);
 
-      // Attribute
-      const aPos = gl.getAttribLocation(prog, 'a_position');
-      gl.enableVertexAttribArray(aPos);
-      gl.vertexAttribPointer(aPos, 2, gl.FLOAT, false, 0, 0);
+      gl.enableVertexAttribArray(locs.aPos);
+      gl.vertexAttribPointer(locs.aPos, 2, gl.FLOAT, false, 0, 0);
 
       gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
 
@@ -253,8 +349,19 @@ export default function ShaderApp(_props: AppComponentProps) {
   }, [code, playing, compileProgram]);
 
   const handleReset = useCallback(() => {
-    setCode(DEFAULT_SHADER);
-    compileProgram(DEFAULT_SHADER);
+    const shader = SHADER_EXAMPLES[selectedExample].code;
+    setCode(shader);
+    compileProgram(shader);
+    startTimeRef.current = Date.now();
+    setPlaying(true);
+  }, [compileProgram, selectedExample]);
+
+  const handleExampleChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
+    const idx = parseInt(e.target.value);
+    setSelectedExample(idx);
+    const shader = SHADER_EXAMPLES[idx].code;
+    setCode(shader);
+    compileProgram(shader);
     startTimeRef.current = Date.now();
     setPlaying(true);
   }, [compileProgram]);
@@ -265,6 +372,31 @@ export default function ShaderApp(_props: AppComponentProps) {
       <div className="shader-app__toolbar">
         <div className="shader-app__title">🔮 Shader</div>
         <div className="shader-app__toolbar-actions">
+          <select
+            className="shader-app__example-select"
+            value={selectedExample}
+            onChange={handleExampleChange}
+          >
+            {SHADER_EXAMPLES.map((ex, i) => (
+              <option key={i} value={i}>{ex.name}</option>
+            ))}
+          </select>
+          <div className="shader-app__scale-control">
+            <label className="shader-app__scale-label">{resScale}%</label>
+            <input
+              type="range"
+              className="shader-app__scale-slider"
+              min={25}
+              max={100}
+              step={5}
+              value={resScale}
+              onChange={(e) => {
+                const v = parseInt(e.target.value);
+                setResScale(v);
+                resScaleRef.current = v / 100;
+              }}
+            />
+          </div>
           <button className="shader-app__tool-btn shader-app__tool-btn--run" onClick={handleRun}>
             ▶ Run
           </button>
