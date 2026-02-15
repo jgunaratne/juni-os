@@ -12,7 +12,7 @@ interface ShaderExample {
 const SHADER_EXAMPLES: ShaderExample[] = [
   {
     name: 'Fire Warp fBM',
-    code: `// Base warp fBM – from shadertoy.com/view/tdG3Rd
+    code: `// Base warp fBM
 // by trinketMage
 
 float colormap_red(float x) {
@@ -86,7 +86,7 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord) {
   },
   {
     name: 'Metaball SDF',
-    code: `// Metaball SDF – from shadertoy.com/view/3sySRK
+    code: `//
 
 float opSmoothUnion( float d1, float d2, float k )
 {
