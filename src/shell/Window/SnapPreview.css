@@ -1,0 +1,19 @@
+.snap-preview {
+  position: fixed;
+  z-index: 99990;
+  border-radius: 8px;
+  background: rgba(var(--os-accent-rgb, 59, 130, 246), 0.15);
+  border: 2px solid rgba(var(--os-accent-rgb, 59, 130, 246), 0.4);
+  pointer-events: none;
+  animation: snapFadeIn 0.12s ease-out;
+}
+
+@keyframes snapFadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}

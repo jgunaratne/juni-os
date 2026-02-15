@@ -1,0 +1,21 @@
+.terminal-container {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: var(--os-window-bg, #1e1e2e);
+}
+
+/* xterm.js fills the container */
+.terminal-container .xterm {
+  height: 100%;
+  padding: 8px;
+}
+
+.terminal-container .xterm-viewport {
+  overflow-y: auto !important;
+}
+
+/* Ensure canvas layers stretch properly */
+.terminal-container .xterm-screen {
+  height: 100% !important;
+}

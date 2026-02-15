@@ -1,0 +1,128 @@
+/* ─── Slider ─────────────────────────────────────────── */
+.ctrl-slider {
+  margin-bottom: 16px;
+}
+
+.ctrl-slider__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.ctrl-slider__label {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--os-text);
+}
+
+.ctrl-slider__value {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--os-accent);
+  font-variant-numeric: tabular-nums;
+}
+
+.ctrl-slider__input {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--os-border);
+  outline: none;
+  cursor: pointer;
+}
+
+.ctrl-slider__input::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--os-accent);
+  cursor: pointer;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+  transition: transform 0.1s ease;
+}
+
+.ctrl-slider__input::-webkit-slider-thumb:hover {
+  transform: scale(1.15);
+}
+
+.ctrl-slider__input::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: none;
+  background: var(--os-accent);
+  cursor: pointer;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+}
+
+/* ─── Toggle ─────────────────────────────────────────── */
+.ctrl-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 0;
+  cursor: pointer;
+}
+
+.ctrl-toggle__label {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--os-text);
+}
+
+.ctrl-toggle__track {
+  position: relative;
+  width: 44px;
+  height: 24px;
+  border-radius: 12px;
+  background: var(--os-border);
+  border: none;
+  cursor: pointer;
+  transition: background 0.2s ease;
+  padding: 0;
+  flex-shrink: 0;
+}
+
+.ctrl-toggle__track--on {
+  background: var(--os-accent);
+}
+
+.ctrl-toggle__thumb {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: white;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  transition: transform 0.2s ease;
+}
+
+.ctrl-toggle__track--on .ctrl-toggle__thumb {
+  transform: translateX(20px);
+}
+
+/* ─── Color Swatch ───────────────────────────────────── */
+.ctrl-swatch {
+  border-radius: 50%;
+  border: 3px solid transparent;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  padding: 0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+.ctrl-swatch:hover {
+  transform: scale(1.12);
+}
+
+.ctrl-swatch--selected {
+  border-color: var(--os-accent);
+  box-shadow: 0 0 0 2px var(--os-accent), 0 2px 6px rgba(0, 0, 0, 0.3);
+}

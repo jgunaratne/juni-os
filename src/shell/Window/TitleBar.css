@@ -1,0 +1,87 @@
+.title-bar {
+  display: flex;
+  align-items: center;
+  height: 38px;
+  padding: 0 12px;
+  background: var(--os-window-chrome);
+  border-bottom: 1px solid var(--os-border);
+  border-radius: var(--os-radius) var(--os-radius) 0 0;
+  user-select: none;
+  cursor: default;
+  -webkit-app-region: drag;
+}
+
+.title-bar--active {
+  background: var(--os-window-chrome-active);
+}
+
+.title-bar__buttons {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  -webkit-app-region: no-drag;
+  z-index: 1;
+}
+
+.title-bar__btn {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  transition: all 0.15s ease;
+  color: transparent;
+}
+
+.title-bar__btn:hover {
+  color: rgba(0, 0, 0, 0.7);
+}
+
+.title-bar__btn--close {
+  background-color: #ff5f57;
+}
+.title-bar__btn--close:hover {
+  background-color: #ff3b30;
+}
+
+.title-bar__btn--minimize {
+  background-color: #ffbd2e;
+}
+.title-bar__btn--minimize:hover {
+  background-color: #ffaa00;
+}
+
+.title-bar__btn--maximize {
+  background-color: #28c840;
+}
+.title-bar__btn--maximize:hover {
+  background-color: #1aab30;
+}
+
+/* When window is inactive, dim the buttons */
+.title-bar:not(.title-bar--active) .title-bar__btn {
+  background-color: var(--os-border);
+}
+.title-bar:not(.title-bar--active) .title-bar__btn:hover {
+  color: transparent;
+}
+
+.title-bar__title {
+  flex: 1;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--os-title-bar-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  pointer-events: none;
+}
+
+.title-bar__spacer {
+  width: 62px; /* Balance the buttons width on the left */
+}

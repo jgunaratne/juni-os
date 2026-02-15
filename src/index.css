@@ -1,0 +1,79 @@
+@import "tailwindcss";
+
+/* ─── CSS Reset ─────────────────────────────────────────── */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body,
+#root {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  font-family: var(--os-font-family, 'Inter', sans-serif);
+  font-size: var(--os-font-size, 14px);
+  color: var(--os-text, #e8e8f0);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ─── OS Theme CSS Variables (defaults — overridden by ThemeManager) ── */
+:root {
+  --os-desktop: #0d0d1a;
+  --os-taskbar: rgba(15, 15, 35, 0.85);
+  --os-taskbar-text: #e0e0f0;
+  --os-window-chrome: rgba(25, 25, 50, 0.90);
+  --os-window-chrome-active: rgba(30, 30, 60, 0.95);
+  --os-title-bar-text: #e0e0f0;
+  --os-window-bg: #1a1a2e;
+  --os-accent: #6c63ff;
+  --os-accent-hover: #7b73ff;
+  --os-text: #e8e8f0;
+  --os-text-secondary: #9090b0;
+  --os-border: rgba(100, 100, 150, 0.3);
+  --os-shadow: rgba(0, 0, 0, 0.5);
+  --os-blur: 12px;
+  --os-radius: 12px;
+  --os-transparency: 0.9;
+  --os-font-family: 'Inter', sans-serif;
+  --os-font-size: 14px;
+  --os-animation-speed: 1;
+}
+
+/* ─── Shell Layout ──────────────────────────────────────── */
+.junios-shell {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  background: var(--os-desktop);
+}
+
+/* ─── Scrollbar Styling ─────────────────────────────────── */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--os-border);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--os-text-secondary);
+}
+
+/* ─── Selection ─────────────────────────────────────────── */
+::selection {
+  background: var(--os-accent);
+  color: white;
+}

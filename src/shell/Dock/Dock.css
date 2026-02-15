@@ -1,0 +1,121 @@
+/* ─── Dock (left, default) ───────────────────────────── */
+.dock {
+  position: fixed;
+  top: 32px;
+  left: 0;
+  bottom: 0;
+  width: 68px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 8px 0;
+  background: var(--os-taskbar);
+  backdrop-filter: blur(var(--os-blur));
+  -webkit-backdrop-filter: blur(var(--os-blur));
+  z-index: 9999;
+  user-select: none;
+  gap: 4px;
+  transition: all 0.3s ease;
+}
+
+/* ─── Dock (bottom variant) ──────────────────────────── */
+.dock--bottom {
+  top: auto;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  height: 68px;
+  flex-direction: row;
+  justify-content: center;
+  padding: 0 8px;
+}
+
+.dock--bottom .dock__apps {
+  flex-direction: row;
+}
+
+.dock--bottom .dock__separator {
+  width: 1px;
+  height: 32px;
+  margin: 0 4px;
+}
+
+.dock--bottom .dock__indicators {
+  bottom: 2px;
+}
+
+.dock--bottom .dock__item--grid {
+  margin-top: 0;
+  margin-left: auto;
+}
+
+/* ─── Dock children ──────────────────────────────────── */
+.dock__apps {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  flex: 1;
+}
+
+.dock__item {
+  position: relative;
+  width: var(--dock-icon-size, 48px);
+  height: var(--dock-icon-size, 48px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--os-radius);
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  color: var(--os-taskbar-text);
+}
+
+.dock__item:hover {
+  background: rgba(255, 255, 255, 0.1);
+  transform: scale(1.08);
+}
+
+.dock__item--focused {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.dock__icon {
+  font-size: calc(var(--dock-icon-size, 48px) * 0.54);
+  line-height: 1;
+}
+
+.dock__indicators {
+  position: absolute;
+  bottom: 2px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 3px;
+}
+
+.dock__dot {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--os-accent);
+}
+
+.dock__separator {
+  width: 32px;
+  height: 1px;
+  background: var(--os-border);
+  margin: 4px 0;
+}
+
+.dock__item--grid {
+  margin-top: auto;
+  opacity: 0.6;
+}
+
+.dock__item--grid:hover {
+  opacity: 1;
+}

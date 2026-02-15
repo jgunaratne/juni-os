@@ -1,0 +1,87 @@
+.top-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 12px;
+  background: var(--os-taskbar);
+  color: var(--os-taskbar-text);
+  font-size: 13px;
+  font-weight: 500;
+  z-index: 10000;
+  backdrop-filter: blur(var(--os-blur));
+  -webkit-backdrop-filter: blur(var(--os-blur));
+  user-select: none;
+}
+
+.top-bar__left {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-width: 0;
+  position: relative;
+}
+
+.top-bar__activities {
+  background: none;
+  border: none;
+  color: var(--os-taskbar-text);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 4px 10px;
+  border-radius: 6px;
+  transition: background 0.15s ease;
+  white-space: nowrap;
+}
+
+.top-bar__activities:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.top-bar__app-name {
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.top-bar__center {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+  position: relative;
+}
+
+.top-bar__right {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  position: relative;
+}
+
+.top-bar__indicators {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.top-bar__indicator {
+  display: flex;
+  align-items: center;
+  opacity: 0.8;
+  cursor: pointer;
+  transition: opacity 0.15s ease;
+}
+
+.top-bar__indicator:hover {
+  opacity: 1;
+}

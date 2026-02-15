@@ -1,0 +1,233 @@
+/* ── TicTacToe App ───────────────────────────── */
+
+.ttt-app {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 100%;
+  background: var(--os-window-bg);
+  color: var(--os-text);
+  font-family: var(--os-font-family);
+  padding: 20px;
+  gap: 16px;
+  overflow-y: auto;
+}
+
+/* ── Header ──────────────────────────────────── */
+
+.ttt-app__header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+}
+
+.ttt-app__title {
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.ttt-app__difficulty {
+  display: flex;
+  gap: 4px;
+  background: rgba(128, 128, 128, 0.1);
+  border-radius: 8px;
+  padding: 3px;
+}
+
+.ttt-app__diff-btn {
+  padding: 5px 14px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--os-text-secondary);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.ttt-app__diff-btn:hover {
+  color: var(--os-text);
+}
+
+.ttt-app__diff-btn--active {
+  background: var(--os-accent);
+  color: #fff;
+}
+
+/* ── Scoreboard ──────────────────────────────── */
+
+.ttt-app__scoreboard {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.ttt-app__score-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 52px;
+  padding: 6px 12px;
+  border-radius: 8px;
+  background: rgba(128, 128, 128, 0.08);
+}
+
+.ttt-app__score-label {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--os-text-secondary);
+}
+
+.ttt-app__score-value {
+  font-size: 20px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.ttt-app__score-item--win .ttt-app__score-value {
+  color: #00c853;
+}
+
+.ttt-app__score-item--draw .ttt-app__score-value {
+  color: var(--os-text-secondary);
+}
+
+.ttt-app__score-item--loss .ttt-app__score-value {
+  color: #ff1744;
+}
+
+.ttt-app__reset-score {
+  width: 28px;
+  height: 28px;
+  border: 1px solid var(--os-border);
+  border-radius: 6px;
+  background: rgba(128, 128, 128, 0.06);
+  color: var(--os-text-secondary);
+  font-size: 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.12s;
+}
+
+.ttt-app__reset-score:hover {
+  background: rgba(128, 128, 128, 0.15);
+  color: var(--os-text);
+}
+
+/* ── Status ──────────────────────────────────── */
+
+.ttt-app__status {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--os-text-secondary);
+  padding: 4px 16px;
+  border-radius: 6px;
+  min-height: 24px;
+  text-align: center;
+}
+
+.ttt-app__status--done {
+  color: var(--os-text);
+  font-weight: 600;
+}
+
+/* ── Board ───────────────────────────────────── */
+
+.ttt-app__board {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+  width: 270px;
+  height: 270px;
+}
+
+.ttt-app__cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 86px;
+  height: 86px;
+  border: none;
+  border-radius: 12px;
+  background: rgba(128, 128, 128, 0.1);
+  cursor: pointer;
+  font-size: 42px;
+  transition: background 0.12s;
+}
+
+.ttt-app__cell--hoverable:hover {
+  background: rgba(128, 128, 128, 0.2);
+}
+
+.ttt-app__cell--filled {
+  cursor: default;
+}
+
+.ttt-app__cell--win {
+  background: rgba(0, 200, 83, 0.15);
+}
+
+.ttt-app__cell:disabled {
+  cursor: default;
+}
+
+/* ── Marks ───────────────────────────────────── */
+
+.ttt-app__mark {
+  font-weight: 700;
+  line-height: 1;
+  animation: ttt-pop 0.2s ease-out;
+}
+
+.ttt-app__mark--x {
+  color: #42a5f5;
+}
+
+.ttt-app__mark--o {
+  color: #ef5350;
+}
+
+@keyframes ttt-pop {
+  from {
+    transform: scale(0);
+    opacity: 0;
+  }
+
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* ── Play Again Button ───────────────────────── */
+
+.ttt-app__play-again {
+  padding: 10px 28px;
+  border: none;
+  border-radius: 10px;
+  background: var(--os-accent);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.15s, transform 0.15s;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.ttt-app__play-again--visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.ttt-app__play-again--visible:hover {
+  transform: scale(1.04);
+  opacity: 0.9;
+}

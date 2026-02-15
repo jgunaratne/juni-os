@@ -1,0 +1,275 @@
+.chess-app {
+  display: flex;
+  height: 100%;
+  background: var(--os-window-bg);
+  color: var(--os-text);
+  font-family: var(--os-font-family);
+}
+
+/* ── Board area ──────────────────────────────── */
+
+.chess-app__board-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  min-width: 0;
+}
+
+.chess-app__turn-indicator {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 10px;
+  padding: 6px 16px;
+  border-radius: 8px;
+  background: rgba(128, 128, 128, 0.1);
+}
+
+.chess-app__turn-indicator--check {
+  background: rgba(239, 68, 68, 0.2);
+  color: #ef4444;
+}
+
+.chess-app__board-wrapper {
+  position: relative;
+}
+
+.chess-app__board {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  border: 2px solid var(--os-border);
+  border-radius: 4px;
+  overflow: hidden;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+}
+
+.chess-app__square {
+  width: 56px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 36px;
+  cursor: pointer;
+  position: relative;
+  user-select: none;
+  transition: background 0.1s ease;
+}
+
+.chess-app__square--light {
+  background: #e8d4a2;
+}
+
+.chess-app__square--dark {
+  background: #b58863;
+}
+
+.chess-app__square--selected {
+  background: rgba(100, 180, 100, 0.5) !important;
+}
+
+.chess-app__square--valid-move {
+  cursor: pointer;
+}
+
+.chess-app__square--valid-move::after {
+  content: '';
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.chess-app__square--valid-capture {
+  cursor: pointer;
+}
+
+.chess-app__square--valid-capture::after {
+  content: '';
+  position: absolute;
+  inset: 2px;
+  border-radius: 50%;
+  border: 3px solid rgba(0, 0, 0, 0.2);
+}
+
+.chess-app__square--last-move {
+  background: rgba(255, 255, 120, 0.3) !important;
+}
+
+.chess-app__square--check {
+  background: rgba(239, 68, 68, 0.4) !important;
+}
+
+.chess-app__piece {
+  font-size: 36px;
+  line-height: 1;
+  filter: drop-shadow(1px 1px 1px rgba(0, 0, 0, 0.3));
+  z-index: 1;
+}
+
+/* ── Coordinates ─────────────────────────────── */
+
+.chess-app__rank-label {
+  position: absolute;
+  top: 2px;
+  left: 3px;
+  font-size: 9px;
+  font-weight: 700;
+  pointer-events: none;
+  opacity: 0.5;
+}
+
+.chess-app__file-label {
+  position: absolute;
+  bottom: 1px;
+  right: 3px;
+  font-size: 9px;
+  font-weight: 700;
+  pointer-events: none;
+  opacity: 0.5;
+}
+
+.chess-app__square--light .chess-app__rank-label,
+.chess-app__square--light .chess-app__file-label {
+  color: #b58863;
+}
+
+.chess-app__square--dark .chess-app__rank-label,
+.chess-app__square--dark .chess-app__file-label {
+  color: #e8d4a2;
+}
+
+/* ── Sidebar ─────────────────────────────────── */
+
+.chess-app__sidebar {
+  width: 200px;
+  display: flex;
+  flex-direction: column;
+  background: rgba(0, 0, 0, 0.15);
+  border-left: 1px solid var(--os-border);
+  flex-shrink: 0;
+}
+
+.chess-app__sidebar-title {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 12px 14px 8px;
+  color: var(--os-text-secondary);
+}
+
+/* ── Captured pieces ─────────────────────────── */
+
+.chess-app__captured {
+  padding: 4px 14px 12px;
+  border-bottom: 1px solid var(--os-border);
+}
+
+.chess-app__captured-label {
+  font-size: 11px;
+  color: var(--os-text-secondary);
+  margin-bottom: 4px;
+}
+
+.chess-app__captured-pieces {
+  font-size: 18px;
+  letter-spacing: 1px;
+  min-height: 24px;
+  line-height: 1.4;
+  word-break: break-all;
+}
+
+/* ── Move history ────────────────────────────── */
+
+.chess-app__moves {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px 14px;
+  font-family: 'SF Mono', 'Fira Code', monospace;
+  font-size: 12px;
+}
+
+.chess-app__move-row {
+  display: flex;
+  gap: 8px;
+  padding: 2px 0;
+}
+
+.chess-app__move-num {
+  color: var(--os-text-secondary);
+  min-width: 24px;
+}
+
+.chess-app__move-white,
+.chess-app__move-black {
+  min-width: 50px;
+  color: var(--os-text);
+  opacity: 0.7;
+}
+
+/* ── Actions ─────────────────────────────────── */
+
+.chess-app__actions {
+  padding: 10px 14px;
+  display: flex;
+  gap: 6px;
+}
+
+.chess-app__action-btn {
+  flex: 1;
+  padding: 8px;
+  border: none;
+  border-radius: 6px;
+  background: rgba(128, 128, 128, 0.1);
+  color: var(--os-text);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.12s ease;
+}
+
+.chess-app__action-btn:hover {
+  background: rgba(128, 128, 128, 0.2);
+}
+
+/* ── Game over overlay ───────────────────────── */
+
+.chess-app__game-over {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  border-radius: 4px;
+  z-index: 5;
+}
+
+.chess-app__game-over-text {
+  font-size: 24px;
+  font-weight: 700;
+  color: #fff;
+}
+
+.chess-app__game-over-sub {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.chess-app__game-over-btn {
+  margin-top: 8px;
+  padding: 10px 24px;
+  border: none;
+  border-radius: 8px;
+  background: var(--os-accent);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}

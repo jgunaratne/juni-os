@@ -1,0 +1,163 @@
+/* ── Shader App ──────────────────────────────── */
+
+.shader-app {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: var(--os-window-bg);
+  color: var(--os-text);
+  font-family: var(--os-font-family);
+  overflow: hidden;
+}
+
+/* ── Toolbar ─────────────────────────────────── */
+
+.shader-app__toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--os-border);
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.shader-app__title {
+  font-size: 15px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.shader-app__toolbar-actions {
+  display: flex;
+  gap: 4px;
+}
+
+.shader-app__tool-btn {
+  padding: 4px 10px;
+  border: 1px solid var(--os-border);
+  border-radius: 6px;
+  background: rgba(128, 128, 128, 0.06);
+  color: var(--os-text-secondary);
+  font-size: 11px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.12s;
+  white-space: nowrap;
+}
+
+.shader-app__tool-btn:hover {
+  background: rgba(128, 128, 128, 0.15);
+  color: var(--os-text);
+}
+
+.shader-app__tool-btn--active {
+  background: var(--os-accent);
+  color: #fff;
+  border-color: var(--os-accent);
+}
+
+.shader-app__tool-btn--run {
+  background: #00c853;
+  color: #fff;
+  border-color: #00c853;
+}
+
+.shader-app__tool-btn--run:hover {
+  background: #00b248;
+}
+
+/* ── Content Layout ──────────────────────────── */
+
+.shader-app__content {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+}
+
+/* ── Canvas ──────────────────────────────────── */
+
+.shader-app__canvas-container {
+  flex: 1;
+  position: relative;
+  min-width: 0;
+  background: #000;
+}
+
+.shader-app__canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.shader-app__paused-overlay {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  padding: 3px 8px;
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.6);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+}
+
+/* ── Editor ──────────────────────────────────── */
+
+.shader-app__editor-container {
+  width: 340px;
+  display: flex;
+  flex-direction: column;
+  border-left: 1px solid var(--os-border);
+  flex-shrink: 0;
+}
+
+.shader-app__editor {
+  flex: 1;
+  padding: 12px;
+  border: none;
+  background: rgba(0, 0, 0, 0.85);
+  color: #e0e0e0;
+  font-family: 'SF Mono', 'Fira Code', 'Menlo', monospace;
+  font-size: 12px;
+  line-height: 1.5;
+  resize: none;
+  outline: none;
+  tab-size: 4;
+  white-space: pre;
+  overflow: auto;
+}
+
+.shader-app__editor::placeholder {
+  color: #555;
+}
+
+/* ── Error Display ───────────────────────────── */
+
+.shader-app__error {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  padding: 8px 12px;
+  background: rgba(255, 23, 68, 0.1);
+  border-top: 1px solid rgba(255, 23, 68, 0.3);
+  max-height: 80px;
+  overflow-y: auto;
+}
+
+.shader-app__error-icon {
+  color: #ff1744;
+  font-size: 14px;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.shader-app__error-text {
+  color: #ff8a80;
+  font-size: 11px;
+  font-family: 'SF Mono', 'Fira Code', 'Menlo', monospace;
+  margin: 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
