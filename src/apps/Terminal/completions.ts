@@ -80,16 +80,13 @@ async function completePath(
   fs: FileSystemProvider,
 ): Promise<CompletionResult | null> {
   let dir: string;
-  let prefix: string;
 
   const lastSlash = partial.lastIndexOf('/');
   if (lastSlash === -1) {
     dir = cwd;
-    prefix = partial;
   } else {
     const pathPart = partial.slice(0, lastSlash) || '/';
     dir = pathPart.startsWith('/') ? pathPart : `${cwd}/${pathPart}`;
-    prefix = partial.slice(lastSlash + 1);
   }
 
   try {
