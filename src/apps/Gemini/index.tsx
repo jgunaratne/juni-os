@@ -21,46 +21,35 @@ function isError(entry: ChatEntry): entry is GeminiError {
   return 'isError' in entry;
 }
 
-/* ── Gemini API ─────────────────────────────────────────── */
+/* ── Backend API ────────────────────────────────────────── */
+
+function getVertexConfig() {
+  return {
+    project: localStorage.getItem('junios-gcp-project') || undefined,
+    location: localStorage.getItem('junios-gcp-location') || undefined,
+  };
+}
 
 async function callGemini(
-  apiKey: string,
   model: string,
   messages: Message[],
 ): Promise<string> {
-  const contents = messages.map((m) => ({
-    role: m.role,
-    parts: [{ text: m.text }],
-  }));
-
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
-
-  const res = await fetch(url, {
+  const res = await fetch('/api/gemini/chat', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      contents,
-      generationConfig: {
-        temperature: 0.7,
-        maxOutputTokens: 4096,
-      },
-    }),
+    body: JSON.stringify({ model, messages, ...getVertexConfig() }),
   });
 
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
-    const msg = err?.error?.message || `HTTP ${res.status}`;
-    throw new Error(msg);
+    throw new Error(err?.error || `HTTP ${res.status}`);
   }
 
   const data = await res.json();
-  const text =
-    data?.candidates?.[0]?.content?.parts?.[0]?.text ??
-    'No response generated.';
-  return text;
+  return data.reply ?? 'No response generated.';
 }
 
-/* ── NanoBanana Image Generation (Gemini Image API) ─────── */
+/* ── Image Generation via Backend ───────────────────────── */
 
 interface ImageGenResult {
   text: string;
@@ -68,50 +57,24 @@ interface ImageGenResult {
 }
 
 async function callNanoBanana(
-  apiKey: string,
   prompt: string,
 ): Promise<ImageGenResult> {
-  const model = 'gemini-2.0-flash-exp-image-generation';
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
-
-  const res = await fetch(url, {
+  const res = await fetch('/api/gemini/image', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      contents: [{ parts: [{ text: prompt }] }],
-      generationConfig: {
-        responseModalities: ['TEXT', 'IMAGE'],
-      },
-    }),
+    body: JSON.stringify({ prompt, ...getVertexConfig() }),
   });
 
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
-    const msg = err?.error?.message || `HTTP ${res.status}`;
-    throw new Error(msg);
+    throw new Error(err?.error || `HTTP ${res.status}`);
   }
 
   const data = await res.json();
-  const parts = data?.candidates?.[0]?.content?.parts ?? [];
-
-  let text = '';
-  let imageUrl: string | null = null;
-
-  for (const part of parts) {
-    if (part.text) {
-      text += part.text;
-    }
-    if (part.inlineData) {
-      const { mimeType, data: b64 } = part.inlineData;
-      imageUrl = `data:${mimeType};base64,${b64}`;
-    }
-  }
-
-  if (!imageUrl && !text) {
-    text = 'No image was generated. Try a different prompt.';
-  }
-
-  return { text, imageUrl };
+  return {
+    text: data.text || '',
+    imageUrl: data.imageUrl || null,
+  };
 }
 
 /* ── Simple Markdown Renderer ───────────────────────────── */
@@ -136,13 +99,12 @@ function renderMarkdown(text: string): string {
 
 /* ── Component ──────────────────────────────────────────── */
 
-const STORAGE_KEY = 'junios-gemini-api-key';
-const MODEL_KEY = 'junios-gemini-model';
+/** Read the model set in Control Panel → AI tab (shared localStorage key). */
+function getSelectedModel(): string {
+  return localStorage.getItem('junios-gemini-model') || 'gemini-2.5-flash';
+}
 
 export default function GeminiChat(_props: AppComponentProps) {
-  const [apiKey, setApiKey] = useState(() => localStorage.getItem(STORAGE_KEY) ?? '');
-  const [model, setModel] = useState(() => localStorage.getItem(MODEL_KEY) ?? 'gemini-2.0-flash');
-  const [showSettings, setShowSettings] = useState(!apiKey);
   const [messages, setMessages] = useState<ChatEntry[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -155,22 +117,11 @@ export default function GeminiChat(_props: AppComponentProps) {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, isLoading]);
 
-  // Persist API key
-  useEffect(() => {
-    if (apiKey) localStorage.setItem(STORAGE_KEY, apiKey);
-  }, [apiKey]);
 
-  useEffect(() => {
-    localStorage.setItem(MODEL_KEY, model);
-  }, [model]);
 
   const handleSend = useCallback(async () => {
     const text = input.trim();
     if (!text || isLoading) return;
-    if (!apiKey) {
-      setShowSettings(true);
-      return;
-    }
 
     const userMsg: Message = { role: 'user', text };
     const nextMessages: ChatEntry[] = [...messages, userMsg];
@@ -181,7 +132,7 @@ export default function GeminiChat(_props: AppComponentProps) {
     try {
       if (imageMode) {
         // NanoBanana image generation
-        const result = await callNanoBanana(apiKey, text);
+        const result = await callNanoBanana(text);
         const assistantMsg: Message = {
           role: 'model',
           text: result.text || 'Here is your generated image:',
@@ -193,7 +144,7 @@ export default function GeminiChat(_props: AppComponentProps) {
         const history: Message[] = nextMessages.filter(
           (m): m is Message => !isError(m),
         );
-        const reply = await callGemini(apiKey, model, history);
+        const reply = await callGemini(getSelectedModel(), history);
         const assistantMsg: Message = { role: 'model', text: reply };
         setMessages((prev) => [...prev, assistantMsg]);
       }
@@ -207,7 +158,7 @@ export default function GeminiChat(_props: AppComponentProps) {
       setIsLoading(false);
       inputRef.current?.focus();
     }
-  }, [input, isLoading, apiKey, model, messages, imageMode]);
+  }, [input, isLoading, messages, imageMode]);
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
@@ -223,7 +174,7 @@ export default function GeminiChat(_props: AppComponentProps) {
     setMessages([]);
   }, []);
 
-  const hasKey = apiKey.length > 0;
+
 
   return (
     <div className="gemini-app">
@@ -237,59 +188,8 @@ export default function GeminiChat(_props: AppComponentProps) {
           <button className="gemini-app__header-btn" onClick={handleClear}>
             Clear
           </button>
-          <button
-            className={`gemini-app__header-btn ${showSettings ? 'gemini-app__header-btn--active' : ''}`}
-            onClick={() => setShowSettings(!showSettings)}
-          >
-            ⚙ Settings
-          </button>
         </div>
       </div>
-
-      {/* Settings Panel */}
-      {showSettings && (
-        <div className="gemini-app__settings">
-          <div className="gemini-app__settings-title">API Configuration</div>
-          <div className="gemini-app__settings-row">
-            <span className="gemini-app__settings-label">API Key</span>
-            <input
-              className="gemini-app__settings-input"
-              type="password"
-              placeholder="Enter your Gemini API key..."
-              value={apiKey}
-              onChange={(e) => setApiKey(e.target.value)}
-              spellCheck={false}
-            />
-          </div>
-          <div className="gemini-app__settings-row">
-            <span className="gemini-app__settings-label">Model</span>
-            <select
-              className="gemini-app__settings-select"
-              value={model}
-              onChange={(e) => setModel(e.target.value)}
-            >
-              <option value="gemini-2.5-pro">Gemini 2.5 Pro</option>
-              <option value="gemini-2.5-flash">Gemini 2.5 Flash</option>
-              <option value="gemini-2.0-flash">Gemini 2.0 Flash</option>
-              <option value="gemini-2.0-flash-lite">Gemini 2.0 Flash Lite</option>
-              <option value="gemini-1.5-pro">Gemini 1.5 Pro</option>
-              <option value="gemini-1.5-flash">Gemini 1.5 Flash</option>
-            </select>
-          </div>
-          <div className="gemini-app__settings-hint">
-            Get a key at{' '}
-            <span style={{ color: '#8ab4f8' }}>aistudio.google.com</span>
-          </div>
-          <div className="gemini-app__settings-status">
-            <span
-              className={`gemini-app__settings-dot ${hasKey ? 'gemini-app__settings-dot--connected' : ''}`}
-            />
-            <span style={{ color: hasKey ? '#34a853' : '#888' }}>
-              {hasKey ? 'API key configured' : 'No API key set'}
-            </span>
-          </div>
-        </div>
-      )}
 
       {/* Messages */}
       <div className="gemini-app__messages">
@@ -300,11 +200,9 @@ export default function GeminiChat(_props: AppComponentProps) {
               How can I help you today?
             </div>
             <div className="gemini-app__welcome-hint">
-              {hasKey
-                ? imageMode
-                  ? 'Describe an image to generate with NanoBanana'
-                  : 'Type a message below to start chatting with Gemini'
-                : 'Open Settings to enter your API key first'}
+              {imageMode
+                ? 'Describe an image to generate with NanoBanana'
+                : 'Type a message below to start chatting with Gemini'}
             </div>
           </div>
         )}
@@ -377,11 +275,9 @@ export default function GeminiChat(_props: AppComponentProps) {
             ref={inputRef}
             className="gemini-app__input"
             placeholder={
-              !hasKey
-                ? 'Set API key in Settings first...'
-                : imageMode
-                  ? 'Describe an image to generate...'
-                  : 'Message Gemini...'
+              imageMode
+                ? 'Describe an image to generate...'
+                : 'Message Gemini...'
             }
             value={input}
             onChange={(e) => setInput(e.target.value)}
@@ -392,7 +288,7 @@ export default function GeminiChat(_props: AppComponentProps) {
           <button
             className="gemini-app__send-btn"
             onClick={handleSend}
-            disabled={!input.trim() || isLoading || !hasKey}
+            disabled={!input.trim() || isLoading}
           >
             ↑
           </button>

@@ -29,8 +29,6 @@ const PERIOD_PARAMS: Record<Period, { range: string; interval: string; points: n
 const DEFAULT_SYMBOLS = ['AAPL', 'MSFT', 'GOOGL', 'AMZN', 'NVDA', 'META', 'TSLA', 'BRK-B', 'JPM', 'V'];
 const WATCHLIST_KEY = 'junios-stocks-watchlist';
 const DJIA_SYMBOL = '^DJI';
-const PROXY = 'https://api.allorigins.win/raw?url=';
-
 const NAMES: Record<string, string> = {
   AAPL: 'Apple Inc.', MSFT: 'Microsoft Corp.', GOOGL: 'Alphabet Inc.',
   AMZN: 'Amazon.com Inc.', NVDA: 'NVIDIA Corp.', META: 'Meta Platforms Inc.',
@@ -75,28 +73,27 @@ async function fetchYahooChart(
   range = '5d',
   interval = '1d',
 ): Promise<{ price: number; prevClose: number; history: number[]; name?: string } | null> {
-  const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(symbol)}?range=${range}&interval=${interval}&includePrePost=false`;
+  try {
+    const params = new URLSearchParams({ symbol, range, interval });
+    const res = await fetch(`/api/stocks/chart?${params}`, {
+      signal: AbortSignal.timeout(10000),
+    });
+    if (!res.ok) return null;
 
-  for (const attempt of [url, `${PROXY}${encodeURIComponent(url)}`]) {
-    try {
-      const res = await fetch(attempt, { signal: AbortSignal.timeout(6000) });
-      if (!res.ok) continue;
-      const data: YahooChartResult = await res.json();
-      const result = data?.chart?.result?.[0];
-      if (!result) continue;
+    const data: YahooChartResult = await res.json();
+    const result = data?.chart?.result?.[0];
+    if (!result) return null;
 
-      const closes = result.indicators?.quote?.[0]?.close ?? [];
-      const history = closes.filter((c): c is number => c !== null && c !== undefined);
-      const price = result.meta?.regularMarketPrice ?? history[history.length - 1] ?? 0;
-      const prevClose = result.meta?.previousClose ?? history[0] ?? price;
-      const name = result.meta?.shortName;
+    const closes = result.indicators?.quote?.[0]?.close ?? [];
+    const history = closes.filter((c): c is number => c !== null && c !== undefined);
+    const price = result.meta?.regularMarketPrice ?? history[history.length - 1] ?? 0;
+    const prevClose = result.meta?.previousClose ?? history[0] ?? price;
+    const name = result.meta?.shortName;
 
-      return { price, prevClose, history, name };
-    } catch {
-      continue;
-    }
+    return { price, prevClose, history, name };
+  } catch {
+    return null;
   }
-  return null;
 }
 
 async function fetchDJIA(period: Period): Promise<{ history: number[]; price: number; prevClose: number } | null> {

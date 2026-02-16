@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 
-const STORAGE_KEY = 'junios-gemini-api-key';
+const PROJECT_KEY = 'junios-gcp-project';
+const LOCATION_KEY = 'junios-gcp-location';
 const MODEL_KEY = 'junios-gemini-model';
 
 const MODELS = [
@@ -13,81 +14,95 @@ const MODELS = [
 ];
 
 export function AITab() {
-  const [apiKey, setApiKey] = useState(() => localStorage.getItem(STORAGE_KEY) ?? '');
-  const [model, setModel] = useState(() => localStorage.getItem(MODEL_KEY) ?? 'gemini-2.0-flash');
+  const [project, setProject] = useState(() => localStorage.getItem(PROJECT_KEY) ?? '');
+  const [location, setLocation] = useState(() => localStorage.getItem(LOCATION_KEY) ?? 'us-central1');
+  const [model, setModel] = useState(() => localStorage.getItem(MODEL_KEY) ?? 'gemini-2.5-flash');
   const [saved, setSaved] = useState(false);
-  const [showKey, setShowKey] = useState(false);
+  const [backendStatus, setBackendStatus] = useState<'checking' | 'connected' | 'error'>('checking');
+  const [backendInfo, setBackendInfo] = useState<{ project?: string; location?: string }>({});
+
+  // Persist settings
+  useEffect(() => {
+    if (project) localStorage.setItem(PROJECT_KEY, project);
+    else localStorage.removeItem(PROJECT_KEY);
+  }, [project]);
 
   useEffect(() => {
-    if (apiKey) localStorage.setItem(STORAGE_KEY, apiKey);
-    else localStorage.removeItem(STORAGE_KEY);
-  }, [apiKey]);
+    localStorage.setItem(LOCATION_KEY, location);
+  }, [location]);
 
   useEffect(() => {
     localStorage.setItem(MODEL_KEY, model);
   }, [model]);
+
+  // Health check
+  const checkBackend = useCallback(async () => {
+    setBackendStatus('checking');
+    try {
+      const res = await fetch('/api/health');
+      if (res.ok) {
+        const data = await res.json();
+        setBackendInfo({ project: data.project, location: data.location });
+        setBackendStatus('connected');
+      } else {
+        setBackendStatus('error');
+      }
+    } catch {
+      setBackendStatus('error');
+    }
+  }, []);
+
+  useEffect(() => {
+    checkBackend();
+  }, [checkBackend]);
 
   const handleSave = () => {
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
   };
 
-  const handleClear = () => {
-    setApiKey('');
-    localStorage.removeItem(STORAGE_KEY);
-  };
+  const statusColor =
+    backendStatus === 'connected' ? '#51cf66' :
+      backendStatus === 'error' ? '#ff6b6b' : 'var(--os-text-secondary)';
 
-  const maskedKey = apiKey
-    ? apiKey.slice(0, 6) + '•'.repeat(Math.max(0, apiKey.length - 10)) + apiKey.slice(-4)
-    : '';
+  const statusText =
+    backendStatus === 'connected' ? 'Connected' :
+      backendStatus === 'error' ? 'Disconnected' : 'Checking…';
 
   return (
     <div className="settings-tab">
       <h3 className="settings-tab__title">AI</h3>
 
-      {/* Gemini API Key */}
+      {/* Vertex AI Configuration */}
       <div className="settings-section">
-        <div className="settings-section__label">Gemini API Key</div>
+        <div className="settings-section__label">Vertex AI Configuration</div>
         <div className="ai-key-field">
-          <div className="url-input-row">
+          <div className="url-input-row" style={{ marginBottom: 8 }}>
+            <span style={{ minWidth: 90, fontSize: 12, color: 'var(--os-text-secondary)' }}>Project ID</span>
             <input
               className="settings-input"
-              type={showKey ? 'text' : 'password'}
-              placeholder="Enter your Gemini API key..."
-              value={apiKey}
-              onChange={(e) => { setApiKey(e.target.value); setSaved(false); }}
+              type="text"
+              placeholder="my-gcp-project"
+              value={project}
+              onChange={(e) => { setProject(e.target.value); setSaved(false); }}
               spellCheck={false}
               style={{ fontFamily: "'SF Mono', Menlo, monospace", fontSize: 12 }}
             />
-            <button
-              className="settings-btn"
-              onClick={() => setShowKey(!showKey)}
-              style={{ minWidth: 60 }}
-            >
-              {showKey ? 'Hide' : 'Show'}
-            </button>
           </div>
-          {apiKey && (
-            <div className="ai-key-status">
-              <span className="ai-key-dot ai-key-dot--active" />
-              <span className="ai-key-text">
-                Key configured: {maskedKey}
-              </span>
-              <button className="ai-key-clear" onClick={handleClear}>
-                Clear
-              </button>
-            </div>
-          )}
-          {!apiKey && (
-            <div className="ai-key-status">
-              <span className="ai-key-dot" />
-              <span className="ai-key-text" style={{ color: 'var(--os-text-secondary)' }}>
-                No API key configured
-              </span>
-            </div>
-          )}
+          <div className="url-input-row">
+            <span style={{ minWidth: 90, fontSize: 12, color: 'var(--os-text-secondary)' }}>Location</span>
+            <input
+              className="settings-input"
+              type="text"
+              placeholder="us-central1"
+              value={location}
+              onChange={(e) => { setLocation(e.target.value); setSaved(false); }}
+              spellCheck={false}
+              style={{ fontFamily: "'SF Mono', Menlo, monospace", fontSize: 12 }}
+            />
+          </div>
           <div className="ai-key-hint">
-            Get a key at <strong>aistudio.google.com</strong>
+            These override the backend defaults. Leave <strong>Project ID</strong> empty to use the server's <code>.env</code> value.
           </div>
         </div>
       </div>
@@ -116,23 +131,38 @@ export function AITab() {
 
       {/* About */}
       <div className="settings-section">
-        <div className="settings-section__label">About</div>
+        <div className="settings-section__label">Backend Status</div>
         <div className="about-card">
           <div className="about-card__row">
             <span className="about-card__key">Provider</span>
-            <span className="about-card__val">Google Gemini</span>
+            <span className="about-card__val">Google Vertex AI</span>
           </div>
           <div className="about-card__row">
-            <span className="about-card__key">API Version</span>
-            <span className="about-card__val">v1beta</span>
+            <span className="about-card__key">Server Project</span>
+            <span className="about-card__val" style={{ fontFamily: 'monospace', fontSize: 11 }}>
+              {backendInfo.project || '—'}
+            </span>
+          </div>
+          <div className="about-card__row">
+            <span className="about-card__key">Server Location</span>
+            <span className="about-card__val" style={{ fontFamily: 'monospace', fontSize: 11 }}>
+              {backendInfo.location || '—'}
+            </span>
           </div>
           <div className="about-card__row">
             <span className="about-card__key">Status</span>
-            <span className="about-card__val" style={{ color: apiKey ? '#51cf66' : '#ff6b6b' }}>
-              {apiKey ? 'Connected' : 'Not configured'}
+            <span className="about-card__val" style={{ color: statusColor }}>
+              {statusText}
             </span>
           </div>
         </div>
+        <button
+          className="settings-btn"
+          onClick={checkBackend}
+          style={{ marginTop: 8, fontSize: 12 }}
+        >
+          Refresh Status
+        </button>
       </div>
     </div>
   );

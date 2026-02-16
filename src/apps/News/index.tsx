@@ -85,27 +85,17 @@ function parseRSS(xml: string, source: Article['source'], sourceLabel: string): 
 }
 
 async function fetchFeed(feed: typeof FEEDS[number]): Promise<Article[]> {
-  // Try direct fetch first
   try {
-    const res = await fetch(feed.url, { signal: AbortSignal.timeout(5000) });
+    const params = new URLSearchParams({ url: feed.url });
+    const res = await fetch(`/api/news/feed?${params}`, {
+      signal: AbortSignal.timeout(10000),
+    });
     if (res.ok) {
       const text = await res.text();
       return parseRSS(text, feed.key, feed.label);
     }
   } catch {
-    // CORS blocked — try proxy
-  }
-
-  // Try CORS proxy
-  try {
-    const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(feed.url)}`;
-    const res = await fetch(proxyUrl, { signal: AbortSignal.timeout(8000) });
-    if (res.ok) {
-      const text = await res.text();
-      return parseRSS(text, feed.key, feed.label);
-    }
-  } catch {
-    // Proxy also failed
+    // Backend proxy failed
   }
 
   return [];

@@ -4,7 +4,7 @@ import type { AppManifest } from '@/shared/types';
 const Terminal = React.lazy(() => import('@/apps/Terminal'));
 const FileManager = React.lazy(() => import('@/apps/FileManager'));
 const ControlPanel = React.lazy(() => import('@/apps/ControlPanel'));
-const ImageViewer = React.lazy(() => import('@/apps/ImageViewer'));
+const Paint = React.lazy(() => import('@/apps/Paint'));
 const TaskManager = React.lazy(() => import('@/apps/TaskManager'));
 const Calculator = React.lazy(() => import('@/apps/Calculator'));
 const Notes = React.lazy(() => import('@/apps/Notes'));
@@ -49,7 +49,7 @@ export const appRegistry: AppManifest[] = [
     id: 'image-viewer',
     title: 'Paint',
     icon: '🎨',
-    component: ImageViewer,
+    component: Paint,
     defaultSize: { width: 900, height: 650 },
     capabilities: ['fs.read'],
     allowMultipleInstances: true,
