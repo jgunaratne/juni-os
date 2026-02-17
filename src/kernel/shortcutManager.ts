@@ -66,6 +66,32 @@ export function initShortcuts(): void {
     },
   });
 
+  // Ctrl + ArrowLeft: Previous workspace
+  registerShortcut({
+    key: 'ArrowLeft',
+    ctrl: true,
+    description: 'Switch to previous workspace',
+    handler: () => {
+      const { activeIndex, switchWorkspace } = useWorkspaceManager.getState();
+      if (activeIndex > 0) {
+        switchWorkspace(activeIndex - 1);
+      }
+    },
+  });
+
+  // Ctrl + ArrowRight: Next workspace
+  registerShortcut({
+    key: 'ArrowRight',
+    ctrl: true,
+    description: 'Switch to next workspace',
+    handler: () => {
+      const { activeIndex, workspaces, switchWorkspace } = useWorkspaceManager.getState();
+      if (activeIndex < workspaces.length - 1) {
+        switchWorkspace(activeIndex + 1);
+      }
+    },
+  });
+
   document.addEventListener('keydown', handleKeyDown);
 }
 

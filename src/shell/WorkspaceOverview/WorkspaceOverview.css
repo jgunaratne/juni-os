@@ -1,0 +1,163 @@
+/* ─── Workspace Overview ──────────────────────────────────── */
+
+.workspace-overview {
+  position: fixed;
+  top: 32px;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  animation: ws-overview-in 0.3s ease forwards;
+}
+
+@keyframes ws-overview-in {
+  from {
+    opacity: 0;
+    transform: scale(1.04);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* ─── Workspace Strip (top row) ───────────────────────────── */
+
+.workspace-strip {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 24px 32px 16px;
+  overflow-x: auto;
+  max-width: 100%;
+}
+
+.workspace-strip::-webkit-scrollbar {
+  height: 4px;
+}
+
+.workspace-strip::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 2px;
+}
+
+/* ─── Individual Workspace Thumbnail ──────────────────────── */
+
+.workspace-thumb {
+  position: relative;
+  flex: 0 0 auto;
+  width: 200px;
+  height: 125px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  overflow: hidden;
+  cursor: pointer;
+  transition: border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.workspace-thumb:hover {
+  border-color: rgba(255, 255, 255, 0.25);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.workspace-thumb--active {
+  border-color: var(--os-accent, #4a9eff);
+  box-shadow: 0 0 0 1px var(--os-accent, #4a9eff), 0 4px 20px rgba(74, 158, 255, 0.2);
+}
+
+.workspace-thumb--active:hover {
+  border-color: var(--os-accent, #4a9eff);
+}
+
+/* Mini-windows inside the thumbnail */
+.workspace-thumb__mini-window {
+  position: absolute;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  overflow: hidden;
+}
+
+.workspace-thumb__mini-titlebar {
+  height: 6px;
+  background: rgba(255, 255, 255, 0.25);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.workspace-thumb__mini-window--focused {
+  background: rgba(255, 255, 255, 0.22);
+  border-color: rgba(255, 255, 255, 0.35);
+}
+
+/* Workspace label */
+.workspace-thumb__label {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  text-align: center;
+  padding: 4px 0;
+  font-size: 11px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.7);
+  background: linear-gradient(transparent, rgba(0, 0, 0, 0.4));
+}
+
+.workspace-thumb--active .workspace-thumb__label {
+  color: rgba(255, 255, 255, 0.95);
+}
+
+/* Add workspace button (the empty trailing workspace) */
+.workspace-thumb--empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-style: dashed;
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+.workspace-thumb--empty:hover {
+  border-color: rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.workspace-thumb__plus {
+  font-size: 28px;
+  font-weight: 300;
+  color: rgba(255, 255, 255, 0.4);
+  transition: color 0.2s ease;
+}
+
+.workspace-thumb--empty:hover .workspace-thumb__plus {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+/* ─── Hint Text ───────────────────────────────────────────── */
+
+.workspace-overview__hint {
+  margin-top: auto;
+  padding: 16px 0 24px;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.35);
+  letter-spacing: 0.3px;
+}
+
+.workspace-overview__hint kbd {
+  display: inline-block;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  font-family: inherit;
+  font-size: 11px;
+  margin: 0 2px;
+}

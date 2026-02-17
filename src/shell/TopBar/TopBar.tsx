@@ -1,6 +1,7 @@
 import { useState, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { useWindowManager } from '@/kernel/windowManager';
+import { useWorkspaceManager } from '@/kernel/workspaceManager';
 import { useAuth } from '@/kernel/auth';
 import { Clock } from './Clock';
 import { CalendarDropdown } from './CalendarDropdown';
@@ -10,6 +11,10 @@ import './TopBar.css';
 
 export function TopBar() {
   const focusedWindow = useWindowManager((s) => s.windows.find((w) => w.isFocused));
+  const workspaces = useWorkspaceManager((s) => s.workspaces);
+  const activeIndex = useWorkspaceManager((s) => s.activeIndex);
+  const switchWorkspace = useWorkspaceManager((s) => s.switchWorkspace);
+  const toggleOverview = useWorkspaceManager((s) => s.toggleOverview);
   const logout = useAuth((s) => s.logout);
   const [showCalendar, setShowCalendar] = useState(false);
   const [showQuickSettings, setShowQuickSettings] = useState(false);
@@ -22,8 +27,8 @@ export function TopBar() {
   }, []);
 
   const handleActivities = useCallback(() => {
-    setShowActivitiesMenu((v) => !v);
-  }, []);
+    toggleOverview();
+  }, [toggleOverview]);
 
   return (
     <div className="top-bar">
@@ -36,6 +41,18 @@ export function TopBar() {
             onClose={() => setShowActivitiesMenu(false)}
             onAbout={() => { setShowActivitiesMenu(false); setShowAbout(true); }}
           />
+        )}
+        {workspaces.length > 1 && (
+          <div className="top-bar__workspace-dots">
+            {workspaces.map((ws, idx) => (
+              <button
+                key={ws.id}
+                className={`top-bar__workspace-dot${idx === activeIndex ? ' top-bar__workspace-dot--active' : ''}`}
+                onClick={() => switchWorkspace(idx)}
+                title={`Workspace ${idx + 1}`}
+              />
+            ))}
+          </div>
         )}
         {focusedWindow && (
           <span className="top-bar__app-name">{focusedWindow.title}</span>

@@ -11,7 +11,6 @@ interface QuickSettingsProps {
 export function QuickSettings({ onClose, onLock, onLogout }: QuickSettingsProps) {
   const ref = useRef<HTMLDivElement>(null);
   const [volume, setVolume] = useState(75);
-  const [wifiOn, setWifiOn] = useState(true);
   const currentTheme = useThemeManager((s) => s.currentTheme);
   const setThemeById = useThemeManager((s) => s.setThemeById);
 
@@ -57,13 +56,6 @@ export function QuickSettings({ onClose, onLock, onLogout }: QuickSettingsProps)
   return (
     <div ref={ref} className="quick-settings">
       <div className="quick-settings__toggles">
-        <button
-          className={`quick-settings__toggle ${wifiOn ? 'quick-settings__toggle--active' : ''}`}
-          onClick={() => setWifiOn(!wifiOn)}
-        >
-          <span className="quick-settings__toggle-icon">📶</span>
-          Wi-Fi
-        </button>
         <button
           className={`quick-settings__toggle ${isDark ? 'quick-settings__toggle--active' : ''}`}
           onClick={toggleDarkMode}

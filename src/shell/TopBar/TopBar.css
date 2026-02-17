@@ -85,3 +85,37 @@
 .top-bar__indicator:hover {
   opacity: 1;
 }
+/* ─── Workspace Dots ──────────────────────────────────────── */
+
+.top-bar__workspace-dots {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 4px;
+}
+
+.top-bar__workspace-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(255, 255, 255, 0.45);
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.top-bar__workspace-dot:hover {
+  border-color: rgba(255, 255, 255, 0.7);
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.top-bar__workspace-dot--active {
+  background: var(--os-accent, #4a9eff);
+  border-color: var(--os-accent, #4a9eff);
+}
+
+.top-bar__workspace-dot--active:hover {
+  background: var(--os-accent, #4a9eff);
+  border-color: var(--os-accent, #4a9eff);
+}

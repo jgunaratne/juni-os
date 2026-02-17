@@ -14,6 +14,7 @@ import { NotificationCenter } from '@/shell/NotificationCenter/NotificationCente
 import { DesktopIcons } from '@/shell/Desktop/DesktopIcons';
 import { Spotlight } from '@/shell/Spotlight/Spotlight';
 import { LockScreen } from '@/shell/LockScreen/LockScreen';
+import { WorkspaceOverview } from '@/shell/WorkspaceOverview/WorkspaceOverview';
 import type { MenuItem } from '@/shell/ContextMenu/ContextMenu';
 import { AnimatePresence } from 'framer-motion';
 import './Desktop.css';
@@ -25,6 +26,7 @@ export function Desktop() {
   const activeIndex = useWorkspaceManager((s) => s.activeIndex);
   const getActiveWorkspace = useWorkspaceManager((s) => s.getActiveWorkspace);
   const addWindowToWorkspace = useWorkspaceManager((s) => s.addWindowToWorkspace);
+  const isOverviewOpen = useWorkspaceManager((s) => s.isOverviewOpen);
   const launchApp = useProcessManager((s) => s.launchApp);
   const fs = useFileSystem((s) => s.provider);
   const theme = useThemeManager((s) => s.currentTheme);
@@ -195,6 +197,7 @@ export function Desktop() {
       )}
       {showSpotlight && <Spotlight onClose={() => setShowSpotlight(false)} />}
       {isLocked && <LockScreen onUnlock={() => setIsLocked(false)} />}
+      {isOverviewOpen && <WorkspaceOverview />}
     </div>
   );
 }
