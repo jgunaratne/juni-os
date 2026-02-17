@@ -16,6 +16,7 @@ const Podcast = React.lazy(() => import('@/apps/Podcast'));
 const TicTacToe = React.lazy(() => import('@/apps/TicTacToe'));
 const Shader = React.lazy(() => import('@/apps/Shader'));
 const MapApp = React.lazy(() => import('@/apps/Map'));
+const GoogleDrive = React.lazy(() => import('@/apps/GoogleDrive'));
 
 export const appRegistry: AppManifest[] = [
   {
@@ -150,6 +151,15 @@ export const appRegistry: AppManifest[] = [
     icon: '🗺️',
     component: MapApp,
     defaultSize: { width: 800, height: 600 },
+    capabilities: [],
+    allowMultipleInstances: false,
+  },
+  {
+    id: 'google-drive',
+    title: 'Google Drive',
+    icon: '🗄️',
+    component: GoogleDrive,
+    defaultSize: { width: 800, height: 550 },
     capabilities: [],
     allowMultipleInstances: false,
   },

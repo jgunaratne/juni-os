@@ -1,5 +1,6 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
 import type { AppComponentProps } from '@/shared/types';
+import { useWindowManager } from '@/kernel/windowManager';
 import './Paint.css';
 
 /* ── Nano Banana API ─────────────────────────── */
@@ -86,7 +87,9 @@ const TOOLS: { id: Tool; icon: string; label: string; shortcut: string }[] = [
 
 /* ── Component ────────────────────────────────── */
 
-export default function PaintApp(_props: AppComponentProps) {
+export default function PaintApp({ windowId }: AppComponentProps) {
+  const windows = useWindowManager((s) => s.windows);
+  const win = windows.find((w) => w.id === windowId);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const overlayRef = useRef<HTMLCanvasElement | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -187,9 +190,19 @@ export default function PaintApp(_props: AppComponentProps) {
   useEffect(() => {
     if (!mounted.current) {
       mounted.current = true;
-      initCanvas(DEFAULT_W, DEFAULT_H);
+      const metaUrl = win?.metadata?.imageUrl as string | undefined;
+      if (metaUrl) {
+        // Load image from metadata (e.g. from Google Drive)
+        const img = new Image();
+        img.crossOrigin = 'anonymous';
+        img.onload = () => loadImageOntoCanvas(img);
+        img.onerror = () => initCanvas(DEFAULT_W, DEFAULT_H);
+        img.src = metaUrl;
+      } else {
+        initCanvas(DEFAULT_W, DEFAULT_H);
+      }
     }
-  }, [initCanvas]);
+  }, [initCanvas]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const loadImageOntoCanvas = useCallback((img: HTMLImageElement) => {
     const w = img.naturalWidth || DEFAULT_W;

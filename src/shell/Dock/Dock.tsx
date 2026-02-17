@@ -1,9 +1,11 @@
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useRef, useState, useMemo } from 'react';
 import { useWindowManager } from '@/kernel/windowManager';
 import { useProcessManager } from '@/kernel/processManager';
 import { useWorkspaceManager } from '@/kernel/workspaceManager';
 import { useDockConfig } from '@/kernel/dockConfigManager';
-import { appRegistry, getApp } from '@/shared/appRegistry';
+import { getApp } from '@/shared/appRegistry';
+import { AppLauncher } from '@/shell/AppLauncher/AppLauncher';
+import { AnimatePresence } from 'framer-motion';
 import './Dock.css';
 
 export function Dock() {
@@ -16,8 +18,19 @@ export function Dock() {
 
   const dockRef = useRef<HTMLDivElement>(null);
   const [mousePos, setMousePos] = useState<number | null>(null);
+  const [showLauncher, setShowLauncher] = useState(false);
 
-  const pinnedApps = appRegistry;
+  // Only show apps that have at least one active process
+  const activeApps = useMemo(() => {
+    const activeAppIds = new Set(
+      processes
+        .filter((p) => p.status === 'running' || p.status === 'background')
+        .map((p) => p.appId)
+    );
+    return [...activeAppIds]
+      .map((id) => getApp(id))
+      .filter(Boolean) as NonNullable<ReturnType<typeof getApp>>[];
+  }, [processes]);
 
   const handleDockClick = useCallback(
     (appId: string) => {
@@ -51,7 +64,6 @@ export function Dock() {
   const handleMouseMove = useCallback((e: React.MouseEvent) => {
     if (!dockRef.current) return;
     const rect = dockRef.current.getBoundingClientRect();
-    // Use Y position relative to dock for vertical dock, X for horizontal
     if (position === 'bottom') {
       setMousePos(e.clientX - rect.left);
     } else {
@@ -66,9 +78,8 @@ export function Dock() {
   // Calculate magnification scale for each icon
   const getScale = (index: number): number => {
     if (!magnification || mousePos === null) return 1;
-    // Each icon is approx iconSize+gap(4) in height/width
     const itemSize = iconSize + 4;
-    const headerOffset = 8; // padding top
+    const headerOffset = 8;
     const itemCenter = headerOffset + index * itemSize + itemSize / 2;
     const distance = Math.abs(mousePos - itemCenter);
     const maxDist = itemSize * 2.5;
@@ -78,63 +89,75 @@ export function Dock() {
   };
 
   return (
-    <div
-      ref={dockRef}
-      className={`dock ${position === 'bottom' ? 'dock--bottom' : ''}`}
-      style={{ '--dock-icon-size': `${iconSize}px` } as React.CSSProperties}
-      onMouseMove={handleMouseMove}
-      onMouseLeave={handleMouseLeave}
-    >
-      <div className="dock__apps">
-        {pinnedApps.map((app, index) => {
-          const appProcesses = processes.filter(
-            (p) => p.appId === app.id && p.status !== 'terminated'
-          );
-          const isRunning = appProcesses.length > 0;
-          const focusedWin = windows.find(
-            (w) => w.appId === app.id && w.isFocused
-          );
-          const scale = getScale(index);
+    <>
+      <div
+        ref={dockRef}
+        className={`dock ${position === 'bottom' ? 'dock--bottom' : ''}`}
+        style={{ '--dock-icon-size': `${iconSize}px` } as React.CSSProperties}
+        onMouseMove={handleMouseMove}
+        onMouseLeave={handleMouseLeave}
+      >
+        <div className="dock__apps">
+          {activeApps.map((app, index) => {
+            const appProcesses = processes.filter(
+              (p) => p.appId === app.id && p.status !== 'terminated'
+            );
+            const isRunning = appProcesses.length > 0;
+            const focusedWin = windows.find(
+              (w) => w.appId === app.id && w.isFocused
+            );
+            const scale = getScale(index);
 
-          return (
-            <button
-              key={app.id}
-              className={`dock__item ${focusedWin ? 'dock__item--focused' : ''}`}
-              onClick={() => handleDockClick(app.id)}
-              title={app.title}
-              style={{
-                transform: `scale(${scale})`,
-                transition: mousePos !== null ? 'transform 0.08s ease-out' : 'transform 0.2s ease-out',
-              }}
-            >
-              <span className="dock__icon">{app.icon}</span>
-              {isRunning && (
-                <div className="dock__indicators">
-                  {appProcesses.slice(0, 3).map((p) => (
-                    <span key={p.id} className="dock__dot" />
-                  ))}
-                </div>
-              )}
-            </button>
-          );
-        })}
+            return (
+              <button
+                key={app.id}
+                className={`dock__item ${focusedWin ? 'dock__item--focused' : ''}`}
+                onClick={() => handleDockClick(app.id)}
+                title={app.title}
+                style={{
+                  transform: `scale(${scale})`,
+                  transition: mousePos !== null ? 'transform 0.08s ease-out' : 'transform 0.2s ease-out',
+                }}
+              >
+                <span className="dock__icon">{app.icon}</span>
+                {isRunning && (
+                  <div className="dock__indicators">
+                    {appProcesses.slice(0, 3).map((p) => (
+                      <span key={p.id} className="dock__dot" />
+                    ))}
+                  </div>
+                )}
+              </button>
+            );
+          })}
+        </div>
+
+        <div className="dock__separator" />
+
+        <button
+          className={`dock__item dock__item--grid ${showLauncher ? 'dock__item--grid-active' : ''}`}
+          title="Show Applications"
+          onClick={() => setShowLauncher((v) => !v)}
+        >
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+            <rect x="1" y="1" width="5" height="5" rx="1" />
+            <rect x="8" y="1" width="5" height="5" rx="1" />
+            <rect x="15" y="1" width="5" height="5" rx="1" />
+            <rect x="1" y="8" width="5" height="5" rx="1" />
+            <rect x="8" y="8" width="5" height="5" rx="1" />
+            <rect x="15" y="8" width="5" height="5" rx="1" />
+            <rect x="1" y="15" width="5" height="5" rx="1" />
+            <rect x="8" y="15" width="5" height="5" rx="1" />
+            <rect x="15" y="15" width="5" height="5" rx="1" />
+          </svg>
+        </button>
       </div>
 
-      <div className="dock__separator" />
-
-      <button className="dock__item dock__item--grid" title="Show Applications">
-        <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
-          <rect x="1" y="1" width="5" height="5" rx="1" />
-          <rect x="8" y="1" width="5" height="5" rx="1" />
-          <rect x="15" y="1" width="5" height="5" rx="1" />
-          <rect x="1" y="8" width="5" height="5" rx="1" />
-          <rect x="8" y="8" width="5" height="5" rx="1" />
-          <rect x="15" y="8" width="5" height="5" rx="1" />
-          <rect x="1" y="15" width="5" height="5" rx="1" />
-          <rect x="8" y="15" width="5" height="5" rx="1" />
-          <rect x="15" y="15" width="5" height="5" rx="1" />
-        </svg>
-      </button>
-    </div>
+      <AnimatePresence>
+        {showLauncher && (
+          <AppLauncher onClose={() => setShowLauncher(false)} />
+        )}
+      </AnimatePresence>
+    </>
   );
 }
