@@ -1,6 +1,7 @@
 # Dependencies
 node_modules/
 server/node_modules/
+deploy/node_modules/
 
 # Build output
 dist/

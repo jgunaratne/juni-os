@@ -17,6 +17,9 @@ const TicTacToe = React.lazy(() => import('@/apps/TicTacToe'));
 const Shader = React.lazy(() => import('@/apps/Shader'));
 const MapApp = React.lazy(() => import('@/apps/Map'));
 const GoogleDrive = React.lazy(() => import('@/apps/GoogleDrive'));
+const Sound = React.lazy(() => import('@/apps/Sound'));
+const Morcheeba = React.lazy(() => import('@/apps/Morcheeba'));
+const LocalFiles = React.lazy(() => import('@/apps/LocalFiles'));
 
 export const appRegistry: AppManifest[] = [
   {
@@ -160,6 +163,33 @@ export const appRegistry: AppManifest[] = [
     icon: '🗄️',
     component: GoogleDrive,
     defaultSize: { width: 800, height: 550 },
+    capabilities: [],
+    allowMultipleInstances: false,
+  },
+  {
+    id: 'sound',
+    title: 'Sound',
+    icon: '🔊',
+    component: Sound,
+    defaultSize: { width: 380, height: 520 },
+    capabilities: [],
+    allowMultipleInstances: true,
+  },
+  {
+    id: 'local-files',
+    title: 'Local Files',
+    icon: '💾',
+    component: LocalFiles,
+    defaultSize: { width: 900, height: 600 },
+    capabilities: [],
+    allowMultipleInstances: false,
+  },
+  {
+    id: 'morcheeba',
+    title: 'Morcheeba',
+    icon: '🖥️',
+    component: Morcheeba,
+    defaultSize: { width: 800, height: 600 },
     capabilities: [],
     allowMultipleInstances: false,
   },

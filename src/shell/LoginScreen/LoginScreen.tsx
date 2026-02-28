@@ -4,44 +4,77 @@ import './LoginScreen.css';
 
 export function LoginScreen() {
   const login = useAuth((s) => s.login);
-  const [name, setName] = useState('');
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
   const [animating, setAnimating] = useState(false);
 
-  const handleLogin = () => {
-    if (!name.trim()) return;
-    setAnimating(true);
-    setTimeout(() => login(name.trim()), 500);   // wait for fade-out
+  const handleLogin = async () => {
+    if (!username.trim() || !password) return;
+    setError('');
+    setLoading(true);
+    try {
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: username.trim(), password }),
+      });
+      const data = await res.json();
+      if (res.ok && data.ok) {
+        setAnimating(true);
+        setTimeout(() => login(data.username), 500);
+      } else {
+        setError(data.error || 'Authentication failed');
+      }
+    } catch {
+      setError('Connection error');
+    }
+    setLoading(false);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') handleLogin();
   };
 
   return (
     <div className={`login-screen ${animating ? 'login-screen--fade-out' : ''}`}>
-      {/* Ambient gradient */}
       <div className="login-screen__bg" />
 
       <div className="login-screen__card">
-        {/* Avatar */}
         <div className="login-screen__avatar">
           <span className="login-screen__avatar-icon">👤</span>
         </div>
 
-        {/* Username */}
         <input
           className="login-screen__input"
           type="text"
-          placeholder="Enter your name"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          onKeyDown={(e) => e.key === 'Enter' && handleLogin()}
+          placeholder="Username"
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
+          onKeyDown={handleKeyDown}
           autoFocus
+          autoComplete="username"
         />
 
-        {/* Sign in */}
+        <input
+          className="login-screen__input"
+          type="password"
+          placeholder="Password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          onKeyDown={handleKeyDown}
+          autoComplete="current-password"
+        />
+
+        {error && <div className="login-screen__error">{error}</div>}
+
         <button
           className="login-screen__button"
           onClick={handleLogin}
-          disabled={!name.trim()}
+          disabled={!username.trim() || !password || loading}
         >
-          Sign In
+          {loading ? 'Signing in…' : 'Sign In'}
         </button>
 
         <div className="login-screen__subtitle">JuniOS v0.1</div>

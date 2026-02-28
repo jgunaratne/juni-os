@@ -1,0 +1,16 @@
+[Unit]
+Description=JuniOS Web Server
+After=network.target
+
+[Service]
+Type=simple
+User=%i
+WorkingDirectory=/opt/junios/deploy
+ExecStart=/usr/bin/node /opt/junios/deploy/server.js
+Restart=always
+RestartSec=5
+Environment=HOME=/home/%i
+Environment=JUNIOS_PORT=3000
+
+[Install]
+WantedBy=multi-user.target

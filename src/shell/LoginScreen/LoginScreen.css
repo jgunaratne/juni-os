@@ -136,6 +136,15 @@
   cursor: not-allowed;
 }
 
+/* ── Error ───────────────────────────────────────────── */
+
+.login-screen__error {
+  font-size: 13px;
+  color: #f87171;
+  text-align: center;
+  padding: 4px 0;
+}
+
 /* ── Subtitle ────────────────────────────────────────── */
 
 .login-screen__subtitle {
