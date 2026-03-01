@@ -37,6 +37,13 @@ app.get('/api/health', (_req, res) => {
   });
 });
 
+/* ── Google Drive Config ──────────────────────────────────── */
+
+app.get('/api/config/google-drive', (_req, res) => {
+  const clientId = process.env.GOOGLE_DRIVE_CLIENT_ID || '';
+  res.json({ clientId });
+});
+
 /* ── Chat Endpoint ─────────────────────────────────────────── */
 
 app.post('/api/gemini/chat', async (req, res) => {

@@ -117,11 +117,19 @@ export default function GoogleDrive(_props: AppComponentProps) {
 
   /* Auth state */
   const [token, setToken] = useState<string | null>(null);
-  const [clientId, setClientId] = useState(() =>
-    localStorage.getItem('junios-gdrive-client-id') || '',
-  );
+  const [clientId, setClientId] = useState('');
+  const [clientIdLoading, setClientIdLoading] = useState(true);
   const [authError, setAuthError] = useState('');
   const [authLoading, setAuthLoading] = useState(false);
+
+  /* Fetch client ID from server .env on mount */
+  useEffect(() => {
+    fetch('/api/config/google-drive')
+      .then((r) => r.json())
+      .then((data) => setClientId(data.clientId || ''))
+      .catch(() => setAuthError('Could not reach server to load OAuth config.'))
+      .finally(() => setClientIdLoading(false));
+  }, []);
 
   /* File browser state */
   const [files, setFiles] = useState<DriveFile[]>([]);
@@ -174,10 +182,9 @@ export default function GoogleDrive(_props: AppComponentProps) {
   const handleSignIn = useCallback(() => {
     const id = clientId.trim();
     if (!id) {
-      setAuthError('Please enter your Google OAuth Client ID first.');
+      setAuthError('OAuth Client ID not configured. Set GOOGLE_DRIVE_CLIENT_ID in server/.env.');
       return;
     }
-    localStorage.setItem('junios-gdrive-client-id', id);
 
     if (!window.google?.accounts?.oauth2) {
       setAuthError('Google Identity Services not loaded yet. Please wait and try again.');
@@ -305,24 +312,21 @@ export default function GoogleDrive(_props: AppComponentProps) {
             Sign in with your Google account to browse files and folders from Google Drive.
           </span>
 
-          <div className="gd__config-row">
-            <span className="gd__config-label">OAuth Client ID</span>
-            <input
-              className="gd__config-input"
-              type="text"
-              placeholder="xxxxxx.apps.googleusercontent.com"
-              value={clientId}
-              onChange={(e) => { setClientId(e.target.value); setAuthError(''); }}
-            />
-          </div>
-
-          <button
-            className="gd__login-btn"
-            onClick={handleSignIn}
-            disabled={authLoading}
-          >
-            {authLoading ? '⏳ Signing in…' : '🔐 Sign in with Google'}
-          </button>
+          {clientIdLoading ? (
+            <span className="gd__login-desc">Loading configuration…</span>
+          ) : !clientId ? (
+            <div className="gd__login-error">
+              OAuth Client ID not configured. Set <code>GOOGLE_DRIVE_CLIENT_ID</code> in <code>server/.env</code>.
+            </div>
+            ) : (
+              <button
+                className="gd__login-btn"
+                onClick={handleSignIn}
+                disabled={authLoading}
+              >
+                {authLoading ? '⏳ Signing in…' : '🔐 Sign in with Google'}
+              </button>
+          )}
 
           {authError && <div className="gd__login-error">{authError}</div>}
         </div>
