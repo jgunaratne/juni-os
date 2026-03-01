@@ -101,7 +101,6 @@ export default function LocalFiles() {
     { name: 'Home', path: HOME, icon: '🏠' },
     { name: 'Documents', path: `${HOME}/Documents`, icon: '📂' },
     { name: 'Downloads', path: `${HOME}/Downloads`, icon: '⬇️' },
-    { name: 'Projects', path: HOME, icon: '💻' },
     { name: 'Workspace', path: `${HOME}/.openclaw/workspace`, icon: '🤖' },
     { name: 'Media', path: `${HOME}/.openclaw/media`, icon: '🖼️' },
   ];
